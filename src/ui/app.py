@@ -15,6 +15,11 @@ st.set_page_config(page_title="Vivienda MVP - Índice DII", layout="wide")
 db = DBManager()
 engine = DIIEngine()
 
+# ── Auto-seed si la DB está vacía ──
+if not db.get_salaries("La Matanza")[1]:
+    from src.db.seed_data import seed
+    seed()
+
 st.title("🏠 Índice DII Vivienda - Conurbano Bonaerense")
 st.markdown("Evaluando el **Índice de Ingreso Disponible (DII)** según **Moda, Mediana y Promedio** salarial.")
 

@@ -6,21 +6,12 @@
 #   Salarios:   INDEC / Observatorio del Conurbano (UNGS) - Abril 2026
 #   SMVM:       $357.800 (Decreto abril 2026)
 
+import os
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from src.db.manager import DBManager
-
-# Limpiar datos anteriores y forzar recreación del schema
-import os
-import sqlite3
-db_path = "vivienda.db"
-if os.path.exists(db_path):
-    os.remove(db_path)
-    print("🧹 Base de datos eliminada. Recreando schema...\n")
-
-db = DBManager()
 
 # ── Datos ACTUALIZADOS del Conurbano Bonaerense (mayo 2026) ──
 
@@ -55,17 +46,33 @@ alquileres = {
     "Tres de Febrero": 620000,
 }
 
-# 1. Cargar salarios
-print("📊 SALARIOS:")
-for ciudad, (minimo, mediana, profesional, promedio, moda) in salarios.items():
-    db.save_salary(ciudad, minimo, mediana, profesional, promedio, moda)
-    print(f"  {ciudad:20s}  Mín: ${minimo:>7,}  |  Moda: ${moda:>7,}  |  Med: ${mediana:>7,}  |  Prom: ${promedio:>7,}  |  Prof: ${profesional:>7,}")
 
-# 2. Cargar alquileres
-print("\n🏠 ALQUILERES:")
-for ciudad, precio in alquileres.items():
-    db.save_rental(ciudad, precio)
-    print(f"  {ciudad:20s}  ${precio:>9,} /mes")
+def seed(db_path: str = "vivienda.db"):
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        print("🧹 Base de datos eliminada. Recreando schema...\n")
 
-print("\n🎯 ¡Datos ACTUALIZADOS del Conurbano cargados exitosamente!")
-print("▶ Ejecutá: streamlit run src/ui/app.py")
+    db = DBManager(db_path)
+
+    # 1. Cargar salarios
+    print("📊 SALARIOS:")
+    for ciudad, (minimo, mediana, profesional, promedio, moda) in salarios.items():
+        db.save_salary(ciudad, minimo, mediana, profesional, promedio, moda)
+        print(f"  {ciudad:20s}  Mín: ${minimo:>7,}  |  Moda: ${moda:>7,}  |  Med: ${mediana:>7,}  |  Prom: ${promedio:>7,}  |  Prof: ${profesional:>7,}")
+
+    # 2. Cargar alquileres
+    print("\n🏠 ALQUILERES:")
+    for ciudad, precio in alquileres.items():
+        db.save_rental(ciudad, precio)
+        print(f"  {ciudad:20s}  ${precio:>9,} /mes")
+
+    print("\n🎯 ¡Datos ACTUALIZADOS del Conurbano cargados exitosamente!")
+
+
+def main():
+    seed()
+    print("▶ Ejecutá: streamlit run src/ui/app.py")
+
+
+if __name__ == "__main__":
+    main()
